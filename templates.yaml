@@ -1,0 +1,102 @@
+- sensor:
+  - name: "Outdoor Temperature"
+    unique_id: 929dfcfc-a912-439b-90d7-f681e969a820
+    unit_of_measurement: °C
+    state: >
+      {{ state_attr('weather.forecast_home', 'temperature') }}
+    device_class: temperature
+    icon: mdi:thermometer
+- trigger:
+    - trigger: time_pattern
+      hours: "/1"
+    - trigger: homeassistant
+      event: start
+    - trigger: event
+      event_type: event_template_reloaded
+  action:
+    - action: weather.get_forecasts
+      data:
+        type: daily
+      target:
+        entity_id: weather.forecast_home
+      response_variable: daily
+  sensor:
+    - name: Temperature Forecast Today
+      unique_id: ceadead0-3ee5-47cc-972a-94edfd26329f
+      state: "{{ daily['weather.forecast_home'].forecast[0].temperature }}"
+      unit_of_measurement: ºC
+      device_class: temperature
+      icon: mdi:thermometer-high
+    - name: Temperature Forecast Tomorrow
+      unique_id: b160e427-e0b9-4bf9-a2d9-f242530550cd
+      state: "{{ daily['weather.forecast_home'].forecast[1].temperature }}"
+      unit_of_measurement: ºC
+      device_class: temperature
+      icon: mdi:thermometer-high
+    - name: Low Temperature Forecast Today
+      unique_id: f4b60ccb-66ae-4709-bb6a-b2ac11303066
+      state: "{{ daily['weather.forecast_home'].forecast[0].templow }}"
+      unit_of_measurement: ºC
+      device_class: temperature
+      icon: mdi:thermometer-low
+    - name: Low Temperature Forecast Tomorrow
+      unique_id: 8f0f55aa-5b25-46a7-ad9f-07492536841e
+      state: "{{ daily['weather.forecast_home'].forecast[1].templow }}"
+      unit_of_measurement: ºC
+      device_class: temperature
+      icon: mdi:thermometer-low
+    - name: Precipitation Forecast Today
+      unique_id: 7f32a77c-bf19-4a8e-b515-2df27cc1460f
+      state: "{{ daily['weather.forecast_home'].forecast[0].precipitation }}"
+      unit_of_measurement: mm
+      device_class: precipitation
+      icon: mdi:weather-rainy
+    - name: Prepicitation Forecast Tomorrow
+      unique_id: dda3fadc-4807-48dd-a48a-dd3a71b33bba
+      state: "{{ daily['weather.forecast_home'].forecast[1].precipitation }}"
+      unit_of_measurement: mm
+      device_class: precipitation
+      icon: mdi:weather-rainy
+    - name: Condition Forecast Today
+      unique_id: 685458bc-9be9-4aec-bfe0-3fc2d69aaa4a
+      state: "{{ daily['weather.forecast_home'].forecast[0].condition }}"
+      icon: mdi:weather-partly-cloudy
+    - name: Condition Forecast Tomorrow
+      unique_id: c8bfc572-c790-4494-a459-5f674f07f57b
+      state: "{{ daily['weather.forecast_home'].forecast[1].condition }}"
+      icon: mdi:weather-partly-cloudy
+- trigger:
+    - trigger: time_pattern
+      hours: "/1"
+    - trigger: homeassistant
+      event: start
+    - trigger: event
+      event_type: event_template_reloaded
+  action:
+    - action: weather.get_forecasts
+      data:
+        type: daily
+      target:
+        entity_id: weather.forecast_work
+      response_variable: daily
+  sensor:
+    - name: Precipitation Forecast Today(Work)
+      unique_id: e0f882c9-37b5-46d6-8dab-e59b4d63159d
+      state: "{{ daily['weather.forecast_work'].forecast[0].precipitation }}"
+      unit_of_measurement: mm
+      device_class: precipitation
+      icon: mdi:weather-rainy
+    - name: Prepicitation Forecast Tomorrow(Work)
+      unique_id: e2f8b1eb-3604-4df4-b603-01e7a56ab09b
+      state: "{{ daily['weather.forecast_work'].forecast[1].precipitation }}"
+      unit_of_measurement: mm
+      device_class: precipitation
+      icon: mdi:weather-rainy
+    - name: Condition Forecast Today(Work)
+      unique_id: 6cbec58a-1c40-4918-9f62-4e26fa0188ad
+      state: "{{ daily['weather.forecast_work'].forecast[0].condition }}"
+      icon: mdi:weather-partly-cloudy
+    - name: Condition Forecast Tomorrow(Work)
+      unique_id: e7c20b04-f838-4b13-8c83-b46de07ece1f
+      state: "{{ daily['weather.forecast_work'].forecast[1].condition }}"
+      icon: mdi:weather-partly-cloudy

@@ -1,0 +1,17 @@
+- id: a7a41029-3b03-4eb2-86e3-0474ac1c9d35
+  alias: "Turn on bedroom light when the first person arrives home after sunset before sunrise"
+  triggers:
+    - trigger: state
+      entity_id: group.family_members
+      from: "not_home"
+      to: "home"
+  conditions:
+    - alias: "Sun down"
+      condition: state  # from sunset until sunrise
+      entity_id: sun.sun
+      state: "below_horizon"
+  actions:
+    - action: light.turn_off
+      target:
+        entity_id:
+          - light.bedroom_light

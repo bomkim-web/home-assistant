@@ -1,0 +1,27 @@
+- id: dd3d659f-1e44-4e95-9cff-93d7749a8baa
+  alias: "Open the curtains at 9 when someone is home"
+  triggers:
+    - trigger: time
+      at: "09:00:00"
+  conditions:
+    - alias: "Somebody is home"
+      condition: state 
+      entity_id: group.family_members
+      state: "home"
+    - alias: "Alarm is on"
+      condition: state
+      entity_id: input_boolean.alarm
+      state: "on"
+  actions:
+    - action: cover.open_cover
+      target:
+        entity_id: cover.windowcovering
+- id: 1f115262-36f4-48c7-81f7-770e271908bc
+  alias: "Close the curtains at sunset"
+  triggers:
+    - trigger: sun
+      event: sunset
+  actions:
+    - action: cover.close_cover
+      target:
+        entity_id: cover.windowcovering

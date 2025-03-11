@@ -1,0 +1,126 @@
+- id: 656132f5-bee7-4691-8ae4-d7e41f462d5d
+  alias: "Workday alarm when bom is home"
+  triggers:
+    - trigger: time
+      at: input_datetime.workday_alarm_time
+  conditions:
+    - alias: "Bom is home"
+      condition: state
+      entity_id: person.bom_kim
+      state: "home"
+    - alias: "It is workday"
+      condition: state
+      entity_id: binary_sensor.workday_sensor
+      state: "on"
+    - alias: "Alarm is on"
+      condition: state
+      entity_id: input_boolean.alarm
+      state: "on"
+    - alias: "Alarm Mondays and Fridays" 
+      condition: or
+      conditions:
+        - condition: template
+          value_template: "{{ (is_state('input_boolean.monday_friday_alarm', 'on'))}}"
+        - condition: template
+          value_template: "{{ (is_state('input_boolean.monday_friday_alarm', 'off') and now().strftime('%w') not in ['1','5']) }}"
+  actions:
+    - action: media_player.volume_set
+      data:
+        volume_level: 0
+      target:
+        entity_id: media_player.bedroom_display
+    - action: media_player.play_media
+      data:
+        media_content_id: media-source://radio_browser/ea8059be-d119-4de3-b27b-0d9bd6aedb17
+        media_content_type: audio/mpeg
+      target:
+        entity_id: media_player.bedroom_display
+    - repeat:
+        count: 3
+        sequence:
+          - action: media_player.volume_set
+            data:
+              volume_level: "{{ repeat.index * 0.1 }}"
+            target:
+              entity_id: media_player.bedroom_display
+          - delay: "00:00:20"
+- id: c1154511-3a8e-4147-9e23-be6f21c1e3b6
+  alias: "Turn on alarm tomorrow if off today"
+  trigger:
+    - trigger: template
+      value_template: "{{ now().strftime('%H:%M') == state_attr('input_datetime.workday_alarm_time', 'timestamp') | timestamp_custom('%H:%M', false) }}"
+  condition:
+    - condition: state
+      entity_id: input_boolean.alarm
+      state: "off"
+  action:
+    - delay: >
+        {% set alarm_time = as_timestamp(now().strftime('%Y-%m-%d') + ' ' + states('input_datetime.workday_alarm_time')) %}
+        {% set now_time = now().timestamp() %}
+        {% set next_alarm_time = alarm_time + 86400 %}
+        {% set delay_seconds = next_alarm_time - now_time - 3600 %}
+        {{ [delay_seconds, 0] | max | int }}
+    - action: input_boolean.turn_on
+      target:
+        entity_id: input_boolean.alarm
+- id: 400c1781-149c-48d7-8042-e313509316f4
+  alias: "Adaptive Light in the morning"
+  triggers:
+    - trigger: template
+      value_template: >
+        {{ now().strftime('%H:%M') == (state_attr('input_datetime.workday_alarm_time', 'timestamp') - 30*60) | timestamp_custom('%H:%M', false) }}
+  conditions:
+    - alias: "Bom is home"
+      condition: state
+      entity_id: person.bom_kim
+      state: "home"
+    - alias: "It is workday"
+      condition: state
+      entity_id: binary_sensor.workday_sensor
+      state: "on"
+    - alias: "Alarm is on"
+      condition: state
+      entity_id: input_boolean.alarm
+      state: "on"
+    - alias: "Alarm Mondays and Fridays" 
+      condition: or
+      conditions:
+        - condition: template
+          value_template: "{{ (is_state('input_boolean.monday_friday_alarm', 'on'))}}"
+        - condition: template
+          value_template: "{{ (is_state('input_boolean.monday_friday_alarm', 'off') and now().strftime('%w') not in ['1','5']) }}"
+  actions:
+    - repeat:
+        count: 30  # Loop for 30 steps (1 per minute)
+        sequence:
+          - action: light.turn_on
+            target:
+              entity_id:
+                - group.kitchen_lights
+            data:
+              brightness: "{{ 255 / 30 * repeat.index | int }}"  # Increment brightness
+              color_temp: "{{ 370 - (repeat.index * (120 / 30)) | int }}"  # Gradually adjust color temperature from warm (370) to cooler (250) originally 300
+          - delay: "00:01:00"  # Wait 1 minute between steps
+- id: 84f5763d-7154-411d-8993-45088630ffec
+  alias: "Turn on Automations 5 min later"
+  triggers:
+    - trigger: template
+      value_template: >
+        {{ now().strftime('%H:%M') == (state_attr('input_datetime.workday_alarm_time', 'timestamp') + 5*60) | timestamp_custom('%H:%M', false) }}
+  actions:
+    - if:
+        - condition: state
+          entity_id: automation.adaptive_light_in_the_morning
+          state: "off"
+      then:
+        - action: automation.turn_on
+          target:
+            entity_id: automation.adaptive_light_in_the_morning
+    - if:
+        - condition: state
+          entity_id: automation.workday_alarm
+          state: "off"
+      then:
+        - action: automation.turn_on
+          target:
+            entity_id: automation.workday_alarm

@@ -1,0 +1,30 @@
+- id: 40d066b5-1a17-43df-8494-ef79a77bba9e
+  alias: "Turn on air conditioner in warm mode when outdoor temperature below when the first person arrives home"
+  triggers:
+    trigger: state
+    entity_id: group.family_members
+    from: "not_home"
+    to: "home"  
+  conditions:
+    - condition: numeric_state
+      entity_id: sensor.outdoor_temperature
+      below: 16
+  actions:
+    - action: google_assistant_sdk.send_text_command
+      data:
+        command: "Turn on the heat and set the temperature to 22"
+- id: 591a2b37-7273-4115-accc-a8eee06d5f95
+  alias: "Turn on air conditioner in cool mode when outdoor temperature above when the first person arrives home"
+  triggers:
+    trigger: state
+    entity_id: group.family_members
+    from: "not_home"
+    to: "home"
+  conditions:
+    - condition: numeric_state
+      entity_id: sensor.outdoor_temperature
+      above: 30
+  actions:
+    - action: google_assistant_sdk.send_text_command
+      data:
+        command: "Turn on the cooling and set the temperature to 27"

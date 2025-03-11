@@ -1,0 +1,134 @@
+- id: 02dc3052-96f8-4aec-a7d7-e9e5c2990376
+  alias: "Turn on bedroom and entrance light when button short released before"
+  triggers:
+    - trigger: state
+      entity_id: event.rodret_dimmer_button
+      to: short_release
+      attribute: event_type
+  condition:
+    - condition: template
+      value_template: >
+        {{ today_at(states('input_datetime.workday_alarm_time')) > now() }}
+  actions:
+    - action: switch.turn_off
+      target:
+        entity_id: switch.smart_plug  
+    - action: light.turn_on
+      target:
+        entity_id:
+          - group.kitchen_lights
+      data:
+        brightness: 255
+        color_temp: 250
+    - action: light.turn_on
+      target:
+        entity_id:
+          - light.bedroom_light
+    - action: automation.turn_off
+      target:
+        entity_id: automation.workday_alarm
+      data:
+        stop_actions: true
+    - action: automation.turn_off
+      target:
+        entity_id: automation.adaptive_light_in_the_morning
+      data:
+        stop_actions: true
+- id: 1a4fd1e1-9506-4ca5-88e4-7020e282f64c
+  alias: "Turn on bedroom and entrance light when button short released after"
+  triggers:
+    - trigger: state
+      entity_id: event.rodret_dimmer_button
+      to: short_release
+      attribute: event_type
+  condition:
+    - condition: template
+      value_template: >
+        {{ today_at(states('input_datetime.workday_alarm_time')) <= now() }}
+  actions:
+    - action: switch.turn_off
+      target:
+        entity_id: switch.smart_plug  
+    - action: light.turn_on
+      target:
+        entity_id:
+          - group.kitchen_lights
+      data:
+        brightness: 255
+        color_temp: 250
+    - action: light.turn_on
+      target:
+        entity_id:
+          - light.bedroom_light
+    - if:
+        - condition: state
+          entity_id: media_player.bedroom_display
+          state: "playing"
+      then:
+        - action: media_player.media_stop
+          target:
+            entity_id: media_player.bedroom_display
+- id: 2299b5c1-273a-42d7-9612-5c0f417d89ea
+  alias: "Turn off bedroom and entrance light when button 2 short released"
+  triggers:
+    - trigger: state
+      entity_id: event.rodret_dimmer_button_2
+      to: short_release
+      attribute: event_type
+  actions:
+    - action: light.turn_off
+      target:
+        entity_id:
+          - group.kitchen_lights
+          - light.bedroom_light
+          - light.closet_1
+    - action: switch.turn_off
+      target:
+        entity_id: switch.smart_plug_2
+    - action: media_player.media_pause
+      target:
+        entity_id: media_player.bedroom    
+- id: 42c48061-2974-49b6-b970-43b91fb863c9
+  alias: "Toggle the smart plug when button 1 long-pressed"
+  triggers:
+    - trigger: state
+      entity_id: event.rodret_dimmer_button
+      to: long_press
+      attribute: event_type
+  actions:
+    - action: switch.toggle
+      target:
+        entity_id: switch.smart_plug
+- id: 7e70b56a-bde0-4659-b616-ed2ff15cf5d2
+  alias: "Toggle the smart plug when button 2 long-pressed"
+  triggers:
+    - trigger: state
+      entity_id: event.rodret_dimmer_button_2
+      to: long_press
+      attribute: event_type
+  actions:
+    - action: switch.toggle
+      target:
+        entity_id: switch.smart_plug
+- id: eefda598-6363-43c3-b1b3-c04376ca6af1
+  alias: "Open the curtain when button 1 long-pressed"
+  triggers:
+    - trigger: state
+      entity_id: event.remote_2_button
+      to: long_press
+      attribute: event_type
+  actions:
+    - action: cover.open_cover
+      target:
+        entity_id: cover.windowcovering
+- id: cbbc654d-3a84-4252-8026-cfe5596da866
+  alias: "Close the curtain when button 2 long-pressed"
+  triggers:
+    - trigger: state
+      entity_id: event.remote_2_button_2
+      to: long_press
+      attribute: event_type
+  actions:
+    - action: cover.close_cover
+      target:
+        entity_id: cover.windowcovering

@@ -1,0 +1,10 @@
+family_members:
+  name: Family Members
+  entities:
+    - person.bom_kim
+
+kitchen_lights:
+  name: Kitchen Lights
+  entities:
+    - light.kitchen_1
+    - light.entrance_1

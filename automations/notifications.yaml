@@ -1,0 +1,50 @@
+- id: 2f02ff5e-12d4-4c9a-b2ec-bae05dceae5a
+  alias: "Send me how much difference between today and tomorrow's temperature"
+  triggers:
+    - trigger: time
+      at: "21:00:00"
+  actions:
+    - action: notify.mobile_app_boms_iphone
+      data:
+        title: >-
+          {{ states('sensor.low_temperature_forecast_tomorrow') | float | round(1) }}° / {{ states('sensor.temperature_forecast_tomorrow') | float | round(1) }}° Tomorrow
+        message: >-
+          {%- set low_today = states('sensor.low_temperature_forecast_today') | float %}
+          {%- set low_tomorrow = states('sensor.low_temperature_forecast_tomorrow') | float %}
+          {%- set low_diff = low_tomorrow - low_today %}
+          {%- set high_today = states('sensor.temperature_forecast_today') | float %}
+          {%- set high_tomorrow = states('sensor.temperature_forecast_tomorrow') | float %}
+          {%- set high_diff = high_tomorrow - high_today %}
+          {{ low_diff | round(1) }}° / {{ high_diff | round(1) }}°
+- id: 4f4f3157-181b-4906-a1e8-7122b96c9f4f
+  alias: "Send me if it rains today at Work when it is workday"
+  triggers:
+    - trigger: time
+      at: input_datetime.workday_alarm_time
+  conditions:
+    - alias: "It is workday"
+      condition: state
+      entity_id: binary_sensor.workday_sensor
+      state: "on"
+    - condition: template
+      value_template: "{{ states('sensor.precipitation_forecast_today_work') | float | round(0) > 0 }}"
+  actions:
+    - action: notify.mobile_app_boms_iphone
+      data:
+        message: >
+          Rain is forecast {{ states('sensor.precipitation_forecast_today_work') | float }}mm at work today.
+- id: 379575e2-5e5f-450f-9195-3367c293a041
+  alias: "Send me that someone open the door when nobody is home"
+  triggers:
+    - trigger: state
+      entity_id: binary_sensor.parasoll_door_window_sensor_door
+      to: "on"
+  conditions:
+    - alias: "Nobody is home"
+      condition: state 
+      entity_id: group.family_members
+      state: "not_home"
+  actions:
+    - action: notify.bom_devices
+      data:
+        message: "Someone Opened the Door!"

@@ -1,0 +1,68 @@
+- id: 266c2494-ea35-4d5b-9797-50c844b3ca9c
+  alias: "Turn on appliances when the first person arrives home"
+  triggers:
+    - trigger: state
+      entity_id: group.family_members
+      from: "not_home"
+      to: "home"
+  actions:
+    - action: light.turn_on
+      target:
+        entity_id:
+          - group.kitchen_lights
+          - light.bedroom_light   
+- id: f4fb78a0-c527-4189-a034-f9f30408d1da
+  alias: "Turn off appliances when the last person leaves home"
+  triggers:
+    - trigger: state
+      entity_id: group.family_members
+      from: "home"
+      to: "not_home"
+  actions:
+    - action: google_assistant_sdk.send_text_command
+      data:
+        command: "Turn off air conditioner"
+    - action: light.turn_off
+      target:
+        entity_id:
+          - group.kitchen_lights
+          - light.bath_1
+          - light.closet_1
+          - light.toilet_1
+          - light.bedroom_light
+    - action: switch.turn_off
+      target:
+        entity_id:
+          - switch.smart_plug
+          - switch.smart_plug_2
+    - action: media_player.media_pause
+      target:
+        entity_id: media_player.bedroom
+- id: 972ddcfd-ef9b-4fbd-a0f5-3a17c7d70a8d
+  alias: "Turn on air purifier when the first person arrives home"
+  triggers:
+    - trigger: state
+      entity_id: group.family_members
+      from: "not_home"
+      to: "home"
+  actions:
+    - action: media_player.play_media
+      target:
+        entity_id: media_player.bom_s_echo_dot
+      data:
+        media_content_type: custom
+        media_content_id: "ダイキンで空気清浄機を運転して" 
+- id: f7ca8b68-2226-42d4-aca2-32b45d98bf19
+  alias: "Turn off air purifier when the last person leaves home"
+  triggers:
+    - trigger: state
+      entity_id: group.family_members
+      from: "home"
+      to: "not_home"
+  actions:
+    - action: media_player.play_media
+      target:
+        entity_id: media_player.bom_s_echo_dot
+      data:
+        media_content_type: custom
+        media_content_id: "ダイキンで空気清浄機を消して"
